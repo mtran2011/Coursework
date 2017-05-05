@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage{indentfirst}
+
+\title{Model Validation Group Project \\
+Mean Reversion Model for Spreads Between Seasonally Adjusted Major Wheat Prices}
+\date{2017-05-12}
+\author{Lejing Xu, Xiaohe Yu, Minh Tran, Zixiang Zhao}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+
+\section{Validation of Model Data Inputs}
+
+	In validating a model and its results, one of the steps is to confirm and make any necessary comments or qualifications on the data inputs being streamed into the model. For the model under our examination herein, we will comment on not only the data quality of the inputs, but also the validity of the deseasonalized wheat prices which are used in calculating price spreads between major wheat categories. The deseasonalized prices are first produced by the Fourier transform model as described in the first half of \cite{ken93} and as validated in \cite{wang12}. The mean reversion model we are reviewing uses the spreads between these deseasonalized prices as regression inputs, and thus we need to briefly assess the soundness of the Fourier transform model and its outputs, by referring to and summarizing the validation results in \cite{wang12}.
+
+\subsection{Quality of data inputs}
+
+	[reputation of data sources]
+
+	[missing data]
+
+\subsection{Validity of the seasonally adjusted prices produced by Fourier transform}
+
+	A review of the Fourier transform model (\cite{ken93}) has been conducted by \cite{wang12}, and thus we will not repeat this validation here. However, we will briefly refer to the results of \cite{wang12} in order to assess the quality of deseasonalized spreads as inputs into the mean reversion model.
+
+	To begin with, the deseasonalized prices and spreads are not observed directly in market data, but instead have to be calculated first via a Fourier decomposition. The observed market prices of major types of wheats, $p_0(t)$ are decomposed into a seasonal component $s(t)$ and a deseasonalized component $p(t)$ as: $p_0(t) = p(t) + s(t)$. The deseasonalized component $p(t)$ are then used to calculate the spreads between major wheat types. The seasonal component $s(t)$ is periodic and thus can be expressed as a Fourier series sum. In theory, the true periodicity of the seasonal component $s(t)$ is not precisely known, but the model by \cite{ken93} assumes that the period of this function is 1 year. The observed market prices are regressed against the first xxx terms of the Fourier sine and cosine series, leaving the regression residuals being the deseasonalized component $p(t)$. 
+
+	According to \cite{wang12}, the assumptions of this model to calculate $s(t)$ and $p(t)$ are reasonable. The assumption that wheat prices carry a non-stochastic, seasonal component reflects the physical reality that wheat supply depends on seasonal factors such as weather and harvesting times. Furthermore, the assumption of a one-year period in seasonality corresponds well with the cycle of weather and harvesting. The seasonal component is most influenced by structural factors (e.g. production capacities, etc.), which tend to be non-stochastic.
+
+	A potential issue raised by \cite{wang12} on the non-stochastic nature of the seasonal component $s(t)$ is that this is impacted by unusual market shocks, hence the component is not entirely a deterministic function. 
+
+	Importantly, we note that from the observed market data, \cite{wang12} were able to independently replicate the regression coefficients associated with the first term ($(k=1)$) of the Fourier sine and cosine series. A Fourier decomposition of a periodic function $p(t)$ will include an infinite number of terms as $k$ runs from 1 to $\infty$, even though the first several terms carry the most weights in forming the function $p(t)$ while later terms are used in refining the approximation (the Fourier sum is an approximation of the function). Hence, an additional and equally important result from \cite{wang12} is that \textit{even when the decomposition is extended to the first 10 terms (up to $k=10$) of the Fourier series, the shape of the approximated seasonal component $p(t)$ remains roughly similar to what it was when only the first term was used}, as in \cite{ken93}. This suggests that the approximation of $p(t)$ as provided in the model by \cite{ken93} is adequate.	
+
+	This leads us to the approximation of the second component, $s(t)$, which represents wheat prices after adjusting out the seasonality. 
+
+	[deseasonalized being gaussian no drift is that ok]
+	
+	[Wang using 10 degree of Fourier and results remain similar]
+
+\bibliographystyle{apalike}
+\bibliography{grouphw}
+
+\end{document}
