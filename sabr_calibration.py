@@ -49,7 +49,6 @@ def find_K_from_put_delta(delta, sigma, r, q, S0, T):
     
 def call_delta(S0, r, q, T, sigma, K):
     d1 = (log(S0 / K) + (r - q + sigma**2 / 2) * T) / (sigma * sqrt(T))
-    print('d1 is', d1)
     return ss.norm.cdf(d1) * exp(-q * T)
 
 def put_delta(S0, r, q, T, sigma, K):
