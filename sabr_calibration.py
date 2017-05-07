@@ -7,7 +7,7 @@ def sabr_implied_vol(K, F, T, alpha, beta, nu, rho=0):
     
     z = (nu/alpha) * (F*K)**((1-beta)/2) * log(F/K) 
 
-    x = log(((1 - 2*rho**z + z**2)**0.5 + z - rho) / (1 - rho))
+    x = log(((1 - 2*rho*z + z**2)**0.5 + z - rho) / (1 - rho))
 
     first_denom = (F*K)**((1-beta)/2) * (1 + ((1-beta)**2)/24 * log(F/K)**2 + ((1-beta)**4)/1920 * log(F/K)**4)
 
