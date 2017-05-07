@@ -3,8 +3,8 @@ import numpy as np
 import scipy.stats as ss
 from math import log, exp, sqrt
 
-def sabr_sgma(K, F, T, alpha, beta, nu, rho=0):
-
+def sabr_implied_vol(K, F, T, alpha, beta, nu, rho=0):
+    
     z = (nu/alpha) * (F*K)**((1-beta)/2) * log(F/K) 
 
     x = log(((1 - 2*rho**z + z**2)**0.5 + z - rho) / (1 - rho))
@@ -14,10 +14,10 @@ def sabr_sgma(K, F, T, alpha, beta, nu, rho=0):
     third_term = (1 + ((1-beta)**2 / 24 * alpha**2 / (F*K)**(1-beta) + 0.25 * (rho*beta*nu*alpha) / (F*K)**((1-beta)/2) + (2 - 3 * rho**2) / 24 * nu**2) * T)
 
     sigma = alpha / first_denom * (z/x) * third_term
-    
+
     return sigma
 
-def find_K_dns_atm(S0, r, q, T, sigma):    
+def find_K_dns_atm(S0, r, q, T, sigma):
     F = S0 * exp(r - q) * T
     return F * exp(0.5 * sigma**2 * T)
 
@@ -32,3 +32,5 @@ def black_scholes(S0, K, r, q, sigma, T, option_type):
     else:
         raise ValueError('option_type input is bad; input either "call" or "put"')
     return value
+    
+def find_K_from_call_delta(delta, sigma):
