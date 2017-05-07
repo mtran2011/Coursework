@@ -33,14 +33,14 @@ def black_scholes(S0, K, r, q, sigma, T, option_type):
         raise ValueError('option_type input is bad; input either "call" or "put"')
     return value
     
-def find_K_from_call_delta(delta, sigma, r, q, S, T):
+def find_K_from_call_delta(delta, sigma, r, q, S0, T):
     if delta < 0 or delta > 1:
         raise ValueError('call delta must be in [0, 1]')
     N = delta / exp(-q * T) # N(d1)
     d1 = ss.norm.ppf(N)
     return S0 / exp(d1 * (sigma * sqrt(T)) - (r - q + 0.5 * sigma**2) * T)
 
-def find_K_from_put_delta(delta, sigma, r, q, S, T):
+def find_K_from_put_delta(delta, sigma, r, q, S0, T):
     if delta < -1 or delta > 0:
         raise ValueError('put delta must be in [-1, 0]')
     N = - delta / exp(-q * T) # N(-d1)
