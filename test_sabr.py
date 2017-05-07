@@ -1,6 +1,6 @@
 from __future__ import division
 import unittest
-from sabr_calibration import *
+from sabr_helper_functions import *
 
 class SabrTestCase(unittest.TestCase):
     def test_2m_expiry(self):
@@ -29,9 +29,9 @@ class SabrTestCase(unittest.TestCase):
         F = S0 * exp((r - q) * T)
         
         # first condition 
-        guess_K_atm = atm_dns_K(S0, r, q, T, sigma_atm)        
-        delta_atm_call = call_delta(S0, r, q, T, sigma_atm, guess_K_atm)
-        delta_atm_put = put_delta(S0, r, q, T, sigma_atm, guess_K_atm)
+        guess_K_atm = find_atm_strike(S0, r, q, T, sigma_atm)        
+        delta_atm_call = delta_call(S0, r, q, T, sigma_atm, guess_K_atm)
+        delta_atm_put = delta_put(S0, r, q, T, sigma_atm, guess_K_atm)
         self.assertAlmostEqual(delta_atm_call + delta_atm_put, 0, 6)
         self.assertAlmostEqual(guess_K_atm, K_atm, 2)
         

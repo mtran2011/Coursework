@@ -11,13 +11,19 @@ def black_scholes(S0, K, r, q, sigma, T, option_type):
     elif option_type == 'put':
         return - exp(-q * T) * S0 * ss.norm.cdf(-d1) + K * exp(-r * T) * ss.norm.cdf(-d2)
     else:
-        raise ValueError('input either "call" or "put" or option_type')    
+        raise ValueError('use either "call" or "put" or option_type')    
     
-def call_delta(S0, r, q, T, sigma, K):
+def delta_call(S0, r, q, T, sigma, K):
+    '''
+    Find delta of a call for a given strike
+    '''
     d1 = (log(S0 / K) + (r - q + sigma**2 / 2) * T) / (sigma * sqrt(T))
     return ss.norm.cdf(d1) * exp(-q * T)
 
-def put_delta(S0, r, q, T, sigma, K):
+def delta_put(S0, r, q, T, sigma, K):
+    '''
+    Find delta of a put for a given strike
+    '''
     d1 = (log(S0 / K) + (r - q + sigma**2 / 2) * T) / (sigma * sqrt(T))
     return -ss.norm.cdf(-d1) * exp(-q * T)
 
@@ -43,7 +49,7 @@ def put_strike(delta, sigma, r, q, S0, T):
     d1 = - ss.norm.ppf(-delta / exp(-q * T))
     return S0 / exp(d1 * (sigma * sqrt(T)) - (r - q + 0.5 * sigma**2) * T)
 
-def atm_dns_K(S0, r, q, T, sigma):
+def find_atm_strike(S0, r, q, T, sigma):
     '''
     Calculate the ATM strike for a delta neutral straddle
     '''
