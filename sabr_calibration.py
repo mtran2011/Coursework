@@ -18,7 +18,7 @@ def sabr_implied_vol(K, F, T, alpha, beta, nu, rho=0):
     return sigma
 
 def find_K_dns_atm(S0, r, q, T, sigma):
-    F = S0 * exp(r - q) * T
+    F = S0 * exp((r - q) * T)
     return F * exp(0.5 * sigma**2 * T)
 
 def black_scholes(S0, K, r, q, sigma, T, option_type):
@@ -46,3 +46,12 @@ def find_K_from_put_delta(delta, sigma, r, q, S0, T):
     N = - delta / exp(-q * T) # N(-d1)
     d1 = - ss.norm.ppf(N)
     return S0 / exp(d1 * (sigma * sqrt(T)) - (r - q + 0.5 * sigma**2) * T)
+    
+def call_delta(S0, r, q, T, sigma, K):
+    d1 = (log(S0 / K) + (r - q + sigma**2 / 2) * T) / (sigma * sqrt(T))
+    print('d1 is', d1)
+    return ss.norm.cdf(d1) * exp(-q * T)
+
+def put_delta(S0, r, q, T, sigma, K):
+    d1 = (log(S0 / K) + (r - q + sigma**2 / 2) * T) / (sigma * sqrt(T))
+    return -ss.norm.cdf(-d1) * exp(-q * T)

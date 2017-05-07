@@ -5,8 +5,8 @@ from sabr_calibration import *
 class SabrTestCase(unittest.TestCase):
     def test_2m_expiry(self):
         S0 = 1.1
-        r = 0.4 / 100
-        q = -0.6 / 100
+        r = 0.004
+        q = -0.006
         T = 0.169863
         sigma_atm = 0.1035
         sigma_rr = 0.0005
@@ -26,9 +26,13 @@ class SabrTestCase(unittest.TestCase):
         vol_rr_put = 0.105501
         vol_rr_call = 0.106001
         
-        F = S0 * exp((r - q) * T)
+        F = S0 * exp((r - q) * T)        
         # first condition 
-        # self.assertAlmostEqual(find_K_dns_atm(S0, r, q, T, sigma_atm), K_atm, 4)
+        guess_K_atm = find_K_dns_atm(S0, r, q, T, sigma_atm)        
+        delta_atm_call = call_delta(S0, r, q, T, sigma_atm, guess_K_atm)
+        delta_atm_put = put_delta(S0, r, q, T, sigma_atm, guess_K_atm)
+        self.assertAlmostEqual(delta_atm_call + delta_atm_put, 0, 6)
+        self.assertAlmostEqual(guess_K_atm, K_atm, 2)
                 
         sabr_vol_bf_call = sabr_implied_vol(K_bf_call, F, T, alpha, beta, nu)
         sabr_vol_bf_put = sabr_implied_vol(K_bf_put, F, T, alpha, beta, nu)
