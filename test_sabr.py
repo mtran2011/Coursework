@@ -1,6 +1,7 @@
 from __future__ import division
 import unittest
 from sabr_helper_functions import *
+from sabr_calibration import *
 
 class SabrTestCase(unittest.TestCase):
     def test_2m_expiry(self):
@@ -13,7 +14,7 @@ class SabrTestCase(unittest.TestCase):
         sigma_bf = 0.00225
         alpha = 0.10055
         beta = 1.0667
-        nu = 1.26488        
+        nu = 1.26488
         
         K_atm = 1.10087 
         K_bf_put = 1.07093 
@@ -50,6 +51,20 @@ class SabrTestCase(unittest.TestCase):
         self.assertAlmostEqual(sabr_vol_rr_call, vol_rr_call, 5)
         self.assertAlmostEqual(sabr_vol_rr_put, vol_rr_put, 5)
         self.assertAlmostEqual(sabr_vol_rr_call - sabr_vol_rr_put, sigma_rr, 4)
-
+    
+    def test_error_2m(self):
+        T = 0.169863
+        atm = 0.1035
+        rr = 0.0005
+        bf = 0.00225
+        alpha = 0.10055
+        beta = 1.0667
+        nu = 1.26488
+        vol_rr_put = 0.105501
+        
+        sigmas = (atm, rr, bf)
+        e = sum_squared_error(alpha, beta, nu, vol_rr_put, sigmas, T)
+        self.assertAlmostEqual(e, 0)
+    
 if __name__ == '__main__':
     unittest.main()
