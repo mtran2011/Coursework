@@ -36,8 +36,8 @@ class SabrTestCase(unittest.TestCase):
         self.assertAlmostEqual(guess_K_atm, K_atm, 2)
         
         # second condition        
-        sabr_vol_bf_call = find_sabr_vol(K_bf_call, F, T, alpha, beta, nu)
-        sabr_vol_bf_put = find_sabr_vol(K_bf_put, F, T, alpha, beta, nu)
+        sabr_vol_bf_call = find_sabr_vol(alpha, beta, nu, K_bf_call, S0, r, q, T)
+        sabr_vol_bf_put = find_sabr_vol(alpha, beta, nu, K_bf_put, S0, r, q, T)
         call_bf_sabr = black_scholes(S0, K_bf_call, r, q, sabr_vol_bf_call, T, 'call')
         put_bf_sabr = black_scholes(S0, K_bf_put, r, q, sabr_vol_bf_put, T, 'put')        
         call_bf_bs = black_scholes(S0, K_bf_call, r, q, sigma_atm + sigma_bf, T, 'call')
@@ -45,8 +45,8 @@ class SabrTestCase(unittest.TestCase):
         self.assertAlmostEqual(call_bf_bs + put_bf_bs, call_bf_sabr + put_bf_sabr, 6)
         
         # third condition
-        sabr_vol_rr_call = find_sabr_vol(K_rr_call, F, T, alpha, beta, nu)
-        sabr_vol_rr_put = find_sabr_vol(K_rr_put, F, T, alpha, beta, nu)
+        sabr_vol_rr_call = find_sabr_vol(alpha, beta, nu, K_rr_call, S0, r, q, T)
+        sabr_vol_rr_put = find_sabr_vol(alpha, beta, nu, K_rr_put, S0, r, q, T)
         self.assertAlmostEqual(sabr_vol_rr_call, vol_rr_call, 5)
         self.assertAlmostEqual(sabr_vol_rr_put, vol_rr_put, 5)
         self.assertAlmostEqual(sabr_vol_rr_call - sabr_vol_rr_put, sigma_rr, 4)
