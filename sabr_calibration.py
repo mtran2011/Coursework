@@ -1,5 +1,7 @@
 from __future__ import division
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import scipy.stats as ss
 import math
 from sabr_helper_functions import *
@@ -57,3 +59,61 @@ def sum_squared_error(alpha, beta, nu, sigma_rr_put, sigmas, T):
     error_delta = (delta_rr_call - 0.25)**2 + (delta_rr_put - -0.25)**2
     
     return error_vol_atm + error_bf + error_rr + error_delta
+
+def calibrate():
+    triple_sigmas_list = [
+    [7.00, 0.50, 0.15],
+    [11.75, 0.75, 0.15],
+    [11.15, 0.60, 0.175],
+    [9.95, 0.35, 0.225],
+    [10.35, 0.05, 0.225],
+    [10.2, -0.2, 0.25],
+    [10.25, -0.75, 0.275],
+    [10.3, -1.15, 0.275],
+    ]
+    for row in triple_sigmas_list:
+        for i in xrange(len(row)):
+            row[i] = row[i] / 100
+    
+    tenor = ['ON','1W','2W','1M','2M','3M','6M','1Y']
+    expiry = [3, 7, 14, 33, 62, 91, 182, 368]
+    for i in xrange(len(expiry)):
+        expiry[i] = expiry[i] / 365.0
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
