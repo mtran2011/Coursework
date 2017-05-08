@@ -63,8 +63,16 @@ class SabrTestCase(unittest.TestCase):
         vol_rr_put = 0.105501
         
         sigmas = (atm, rr, bf)
-        e = sum_squared_error(alpha, beta, nu, vol_rr_put, sigmas, T)
-        self.assertAlmostEqual(e, 0)
+        errors = sum_squared_error(alpha, beta, nu, vol_rr_put, sigmas, T)[0]
+        for e in errors:
+            self.assertAlmostEqual(e, 0)
     
+    def test_calibrate(self):
+        # pass
+        df = calibrate()
+        print(df)
+        strikes = calibrate_strikes(df.loc['1Y'])
+        print(strikes)
+        
 if __name__ == '__main__':
     unittest.main()
