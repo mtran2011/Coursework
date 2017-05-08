@@ -55,10 +55,11 @@ def find_atm_strike(S0, r, q, T, sigma):
     '''
     return S0 * exp((r - q + 0.5 * sigma**2) * T)
     
-def find_sabr_vol(K, F, T, alpha, beta, nu, rho=0):
+def find_sabr_vol(alpha, beta, nu, K, S0, r, q, T, rho=0):
     '''
     Given strike and expiry, find SABR implied vol     
     '''
+    F = S0 * exp((r - q) * T)
     z = (nu/alpha) * (F*K)**((1-beta)/2) * log(F/K) 
     x = log(((1 - 2*rho*z + z**2)**0.5 + z - rho) / (1 - rho))
     factor = (1 + ((1-beta)**2 / 24 * alpha**2 / (F*K)**(1-beta) + 0.25 * (rho*beta*nu*alpha) / (F*K)**((1-beta)/2) + (2 - 3 * rho**2) / 24 * nu**2) * T)
