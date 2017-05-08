@@ -67,12 +67,11 @@ class SabrTestCase(unittest.TestCase):
         for e in errors:
             self.assertAlmostEqual(e, 0)
     
-    def test_calibrate(self):
-        # pass
+    def test_calibrate(self):        
         df = calibrate()
         print(df)
-        strikes = calibrate_strikes(df.loc['1Y'])
-        print(strikes)
+        for x in calibrate_strikes(df.loc['1Y']):
+            print(x)            
         
 if __name__ == '__main__':
     unittest.main()

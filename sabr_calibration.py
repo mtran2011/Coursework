@@ -154,35 +154,59 @@ def calibrate():
     
 def calibrate_strikes(series1Y):
     # solve for the strikes for question 2
-    T = series1Y.loc['T']
-    alpha = series1Y.loc['alpha']
-    beta = series1Y.loc['beta']
-    nu = series1Y.loc['nu']
+    # T = np.asscalar(series1Y.loc['T'])
+    T = series1Y.loc['T'].item()
+    alpha = np.asscalar(series1Y.loc['alpha']) 
+    beta = np.asscalar(series1Y.loc['beta']) 
+    nu = np.asscalar(series1Y.loc['nu']) 
     delta = 0.1
     
-    def objective_func(args):
-        K_put, K_call = args[:]
-        
+    def objective_call(K_call):
         vol_call = find_sabr_vol(alpha, beta, nu, K_call, S0, r, q, T)
-        vol_put = find_sabr_vol(alpha, beta, nu, K_put, S0, r, q, T) 
-        
-        diff_call = K_call - call_strike(delta, vol_call, r, q, S0, T)
-        diff_put = K_put - put_strike(delta, vol_put, r, q, S0, T)
-        
-        return diff_call, diff_put
+        diff = K_call - call_strike(delta, vol_call, r, q, S0, T)
+        return diff**2
     
-    sol = optimize.root(objective_func, [1.0, 1.0])
-    K_10_put, K_10_call = sol.x
+    def objective_put(K_put):
+        vol_put = find_sabr_vol(alpha, beta, nu, K_put, S0, r, q, T)
+        diff = K_put - put_strike(-delta, vol_put, r, q, S0, T)
+        return diff**2
     
-    return K_10_put, K_10_call
+    # set up constraint K > 0.01
+    cons = ({'type': 'ineq', 'fun': lambda x:  x - 0.01})    
     
+    res_call = optimize.minimize_scalar(objective_call, bounds=(0.01, 1e4), method='bounded')
+    res_put = optimize.minimize_scalar(objective_put, bounds=(0.01, 1e4), method='bounded') 
     
+    K_10_call = res_call.x.item()
+    success_call = res_call.success
     
+    K_10_put = res_put.x.item()
+    success_put = res_put.success
     
+    # plot the vol skew
+    if K_10_put < K_10_call:
+        from_value, to_value = K_10_put, K_10_call
+    else:
+        from_value, to_value = K_10_call, K_10_put
     
+    strikes = np.linspace(from_value, to_value)    
+    vols = [find_sabr_vol(alpha, beta, nu, x, S0, r, q, T) for x in strikes]
+    plt.plot(strikes, vols)
+    plt.xlabel('different strikes K')
+    plt.ylabel('SABR implied vol')
+    plt.title('Plot the vol skew for question 2')
+    plt.grid(True)    
+    plt.show()
     
+    return K_10_put, K_10_call, success_put, success_call
     
-    
+def execute_hw():
+    df = calibrate()
+    print(df)
+    K_10_put, K_10_call, _, _ = calibrate_strikes(df.loc['1Y'])
+    print('Find strikes for delta of 10% using 1Y calibration results')
+    print('K_10_put = %.6f' % K_10_put)
+    print('K_10_call = %.6f' % K_10_call)
     
     
     
