@@ -173,3 +173,36 @@ for _ in range(t):
         adj[u].append((v,r))
         adj[v].append((u,r))
         s = int(input())
+        pass
+    pass
+
+# Dynamic Programming | Set 30 (Dice Throw)
+# HR - Bricks Game 
+def bricks(a):
+    N = len(a)
+    if N <= 3:
+        return sum(a)
+    f = [0 for _ in range(N+1)]
+    a.reverse()
+    for i in range(1,4):
+        f[i] = sum(a[:i])
+    for j in range(4,N+1):
+        x1 = a[j-1] + min(f[j-2], f[j-3], f[j-4])
+        if j >= 6:
+            x2 = a[j-1] + a[j-2] + min(f[j-3], f[j-4], f[j-5])
+            x3 = a[j-1] + a[j-2] + a[j-3] + min(f[j-4], f[j-5], f[j-6])
+        elif j >= 5:
+            x2 = a[j-1] + a[j-2] + min(f[j-3], f[j-4], f[j-5])
+            x3 = a[j-1] + a[j-2] + a[j-3] + min(f[j-4], f[j-5])
+        else:
+            x2 = a[j-1] + a[j-2] 
+            x3 = a[j-1] + a[j-2] + a[j-3] 
+        
+        f[j] = max(x1,x2,x3)    
+    return f[N]
+
+t = int(input())
+for _ in range(t):
+    N = int(input())
+    a = list(map(int, input().split()))
+    print(bricks(a))        
