@@ -127,3 +127,49 @@ def maxChainLen(lis, n):
                 if f[i] + 1 > f[k]:
                     f[k] = f[i] + 1
     return max(f)
+
+# Dijkstra: Shortest Reach 2
+import sys
+import queue
+
+class Node(object):
+    def __init__(self, name):
+        self.name = name
+        self.d = sys.maxsize
+        self.parent = None
+
+def dij(adj, s):
+    '''
+    initialize for all v in V: v.d = inf, v.parent = null
+    set s.d = 0
+    initialize an empty set or priority minQ of unprocessed vertexes, add all v to Q
+    while Q not empty and Q.delmin has d != inf:
+        u = Q.delmin
+        for each v that u connects to:
+            if u.d + weight(u,v) < v.d:
+                v.d = u.d + weight(u,v)
+                v.parent = u
+        mark u as processed
+    '''
+    n = len(adj) # n = V + 1
+    Q = queue.PriorityQueue(n)
+    
+    for name in range(1,n):
+        x = Node(name)
+        if name == s:
+            x.d = 0
+        Q.put((x.d, x))
+    while not Q.empty() and Q.get()[0] != sys.maxsize:
+        _, u = Q.get()
+        adj[u.name]
+    pass
+
+t = int(input())
+for _ in range(t):
+    V, E = map(int, input().split())
+    adj = [list() for _ in range(V+1)]
+    for _ in range(E):
+        u, v, r = map(int, input().split())
+        adj[u].append((v,r))
+        adj[v].append((u,r))
+        s = int(input())
