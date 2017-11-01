@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
-from scipy.interpolate import CubicSpline, interp1d
+from scipy.interpolate import CubicSpline, interp1d, UnivariateSpline
 import matplotlib.pyplot as plt
 
 ############################################################
@@ -53,19 +53,88 @@ plt.xticks(range(1000,3200,200))
 plt.title('Prices of butterflies centered at various strikes')
 plt.tight_layout()
 plt.savefig('butterfly given')
+print(pd.DataFrame({'Strikes': strikes[1:-1], 'Butterfly prices': butterfly_prices}))
+
+############################################################
+# Interpolate implied volatility with cubic spline
+# Compare this with smoothing spline
+############################################################
+k_range = np.arange(1000,2901,1)
+
+iv_spline_interpolator = CubicSpline(strikes, iv)
+cs_interpolated_iv = iv_spline_interpolator(k_range)
+
+iv_smoothing_interpolator = UnivariateSpline(strikes, iv)
+smooth_interpolated_iv = iv_smoothing_interpolator(k_range)
+
+plt.figure()
+plt.plot(strikes, iv, 'o', label='market data of IV')
+plt.plot(k_range, cs_interpolated_iv, label='cubic spline interpolation')
+plt.plot(k_range, smooth_interpolated_iv, 'r--', label='smoothing spline interpolation')
+plt.xlabel('strike')
+plt.ylabel('implied volatility')
+plt.xticks(range(1000,3200,200))
+plt.title('Interpolate implied volatility (IV) with splines')
+plt.legend(loc='best')
+plt.tight_layout()
+plt.savefig('smoothing spline implied vol')
+
+############################################################
+# Use cubic-spline-interpolated IV to calculate call price C
+# then differentiate C twice for risk neutral pdf
+############################################################
+call_prices = [option_price(vol, k, is_call=True)
+               for vol, k in zip(cs_interpolated_iv, k_range)]
+cs_iv_implied_pdf = [call_prices[i+1] - 2 * call_prices[i] + call_prices[i-1] 
+                     for i in range(1, len(call_prices)-1)]
+curve_integral = np.trapz(cs_iv_implied_pdf, x=k_range[1:-1])
+label = 'area under curve: {:.2f}'.format(curve_integral)
+plt.figure()
+plt.plot(k_range[1:-1], cs_iv_implied_pdf, label=label)
+plt.xlabel('stock price at expiry')
+plt.ylabel('pdf implied by call premium')
+plt.xticks(range(1000,3200,200))
+plt.title('Implied pdf of S(T) using cubic-spline-interpolated IV')
+plt.legend(loc='best')
+plt.tight_layout()
+plt.savefig('pdf with spline-interpolated iv')
+
+############################################################
+# Use smoothing-spline-interpolated IV to calculate C
+# then differentiate C twice for risk neutral pdf
+############################################################
+call_prices = [option_price(vol, k, is_call=True)
+               for vol, k in zip(smooth_interpolated_iv, k_range)]
+smooth_iv_implied_pdf = [call_prices[i+1] - 2 * call_prices[i] + call_prices[i-1] 
+                         for i in range(1, len(call_prices)-1)]
+curve_integral = np.trapz(smooth_iv_implied_pdf, x=k_range[1:-1])
+label = 'area under curve: {:.2f}'.format(curve_integral)
+plt.figure()
+plt.plot(k_range[1:-1], smooth_iv_implied_pdf, 'r--', label=label)
+plt.xlabel('stock price at expiry')
+plt.ylabel('pdf implied by call premium')
+plt.xticks(range(1000,3200,200))
+plt.title('Implied pdf of S(T) using smoothing-spline-interpolated IV')
+plt.legend(loc='best')
+plt.tight_layout()
+plt.savefig('pdf with smooth-interpolated iv')
+
+############################################################
+# Use smoothing-spline-interpolated IV to obtain pdf of S(T)
+# Estimate the skewness of this pdf
+############################################################
+
+
 
 ############################################################
 # Interpolate implied volatility with piecewise linear func 
 ############################################################
-k_range = np.arange(1000,2901,1)
 iv_linear_interpolator = interp1d(strikes, iv, kind='linear')
-linear_interp_iv = iv_linear_interpolator(k_range)
+linear_interpolated_iv = iv_linear_interpolator(k_range)
 call_prices = [option_price(vol, k, is_call=True) 
-               for vol, k in zip(linear_interp_iv, k_range)]
-# in this FDM differentiation scheme, step size h=1
+               for vol, k in zip(linear_interpolated_iv, k_range)]
 linear_implied_pdf = [call_prices[i+1] - 2 * call_prices[i] + call_prices[i-1] 
                       for i in range(1, len(call_prices)-1)]
-# double check the integrated area under the pdf curve
 curve_integral = np.trapz(linear_implied_pdf, x=k_range[1:-1])
 label = 'area under curve: {:.2f}'.format(curve_integral)
 plt.figure()
@@ -77,42 +146,6 @@ plt.title('Implied pdf of S(T) using linear-interpolated IV')
 plt.legend(loc='best')
 plt.tight_layout()
 plt.savefig('pdf with linear-interpolated iv')
-
-############################################################
-# Interpolate implied volatility with cubic spline
-############################################################
-iv_spline_interpolator = CubicSpline(strikes, iv)
-cs_interp_iv = iv_spline_interpolator(k_range)
-plt.figure()
-plt.plot(strikes, iv, 'o', label='market data of IV')
-plt.plot(k_range, cs_interp_iv, label='cubic spline interpolation')
-plt.xlabel('strike')
-plt.ylabel('implied volatility')
-plt.xticks(range(1000,3200,200))
-plt.title('Interpolate implied volatility (IV) with cubic spline')
-plt.legend(loc='best')
-plt.tight_layout()
-plt.savefig('cubic spline implied vol')
-
-############################################################
-# Use spline-interpolated IV to calculate call price C
-# then differentiate C twice for risk neutral pdf
-############################################################
-call_prices = [option_price(vol, k, is_call=True)
-               for vol, k in zip(cs_interp_iv, k_range)]
-cs_iv_implied_pdf = [call_prices[i+1] - 2 * call_prices[i] + call_prices[i-1] 
-                  for i in range(1, len(call_prices)-1)]
-curve_integral = np.trapz(cs_iv_implied_pdf, x=k_range[1:-1])
-label = 'area under curve: {:.2f}'.format(curve_integral)
-plt.figure()
-plt.plot(k_range[1:-1], cs_iv_implied_pdf, label=label)
-plt.xlabel('stock price at expiry')
-plt.ylabel('pdf implied by call premium')
-plt.xticks(range(1000,3200,200))
-plt.title('Implied pdf of S(T) using spline-interpolated IV')
-plt.legend(loc='best')
-plt.tight_layout()
-plt.savefig('pdf with spline-interpolated iv')
 
 ############################################################ 
 # directly use given IV to calculate call prices C
@@ -142,8 +175,8 @@ plt.savefig('pdf with only given iv')
 ############################################################
 given_calls = [option_price(vol, k, is_call=True)
                for vol, k in zip(iv, strikes)]
-c_spline_interpolator = CubicSpline(strikes, given_calls)
-call_prices = c_spline_interpolator(k_range)
+call_spline_interpolator = CubicSpline(strikes, given_calls)
+call_prices = call_spline_interpolator(k_range)
 # plot the cubic spline interpolation of call premiums
 plt.figure()
 plt.plot(strikes, given_calls, 'o', label='based on given IV data')
