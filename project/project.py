@@ -123,22 +123,13 @@ plt.savefig('pdf with smooth-interpolated iv')
 # Use smoothing-spline-interpolated IV to obtain pdf of S(T)
 # Estimate the skewness of this pdf
 ############################################################
-mu = np.trapz([f * s for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1]), 
-              x=k_range[1:-1]])
-var = -mu**2 + np.trapz([f * s**2 for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1]), 
-                        x=k_range[1:-1]])
-                        
-
-
-
-
-
-
-
-
-
-
-
+mu = np.trapz([f * s for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1])], 
+              x=k_range[1:-1])
+var = -mu**2 + np.trapz([f * s**2 for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1])], 
+                        x=k_range[1:-1])
+std = var**0.5
+skewness = np.trapz([f * ((s-mu)/std)**3 for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1])], 
+                    x=k_range[1:-1])
 
 
 
