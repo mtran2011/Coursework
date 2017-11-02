@@ -132,7 +132,26 @@ std = var**0.5
 skewness = np.trapz([f * ((s-mu)/std)**3 for f, s in zip(smooth_iv_implied_pdf, k_range[1:-1])], 
                     x=k_range[1:-1])
 
+# use price of OTM digital to show skewness
+def digital_price(sig, k, is_call):
+    f, T = 2000, 1
+    d2 = (math.log(f/k) - 0.5 * sig**2 * T) / (sig * T**0.5)    
+    if is_call:
+        price = norm.cdf(d2)
+    else:
+        price = norm.cdf(-d2)
+    return price
 
+digitals = [digital_price(vol, k, is_call=True) if k > 2000 else digital_price(vol, k, is_call=False)
+            for vol, k in zip(smooth_interpolated_iv, k_range)]
+plt.plot(k_range, digitals, 'b-')
+plt.plot((1000,3000), (0,0), 'k:')
+plt.xlabel('strike of OTM digital')
+plt.ylabel('price of OTM cash-or-nothing digital')
+plt.xticks(range(1000,3200,200))
+plt.title('OTM cash-or-nothing digital prices using smoothing-spline-interpolated IV')
+plt.tight_layout()
+plt.savefig('digital OTM prices')
 
 
 ############################################################
