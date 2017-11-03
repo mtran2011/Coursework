@@ -230,3 +230,36 @@ plt.title('Implied pdf of S(T) using interpolated call premiums')
 plt.legend(loc='best')
 plt.tight_layout()
 plt.savefig('pdf with interpolated call premiums')
+
+############################################################
+# example 2Y vol curve
+############################################################
+# 1 year expiry
+linear = interp1d([1000,2900], [0.35, 0.05])
+iv_1y = linear(k_range)
+calls = [option_price(v, k, is_call=True)
+         for v, k in zip(iv_1y, k_range)]
+pdf_1y = [calls[i+1] - 2 * calls[i] + calls[i-1]
+          for i in range(1, len(k_range)-1)]
+
+# 2 year expiry
+linear = interp1d([1000, 2900], [0.37, 0.15])
+iv_2y = linear(k_range)
+calls = [option_price(v, k, is_call=True)
+         for v, k in zip(iv_2y, k_range)]
+pdf_2y = [calls[i+1] - 2 * calls[i] + calls[i-1]
+          for i in range(1, len(k_range)-1)]
+
+fig, ax1 = plt.subplots()
+ax1.plot(k_range[1:-1], pdf_1y, 'r--', label='1Y density')
+ax1.plot(k_range[1:-1], pdf_2y, 'b-', label='2Y density')
+ax1.set_xlabel('strike')
+ax1.set_ylabel('probability density function')
+ax2 = ax1.twinx()
+ax2.plot(k_range, iv_1y, label='1Y implied vol')
+ax2.plot(k_range, iv_2y, label='2Y implied vol')
+ax2.set_ylabel('implied vol')
+ax1.legend(loc=1)
+ax2.legend(loc=2)
+fig.tight_layout()
+fig.savefig('example 2y density')
