@@ -1,48 +1,62 @@
-import numpy as np 
+import numpy as np
+from scipy.optimize import minimize
 
-def predict_states(y, R, Q, A):
+H = np.matrix([1,0]) # H is a row
+data = np.loadtxt('../Documents/ApplePriceTargets.txt')
+y = np.matrix(data).T # column matrix, observations of Y
+n = y.size # number of observations
+
+def filtering(R, Q, A):
     '''
     Args:
-        y (matrix nx1): column matrix, observations of Y
         R (float): scalar variance of y|x
         Q (matrix 2x2): variance of x(k)|x(k-1)
         A (matrix 2x2): mean factor in x(k)|x(k-1)
     Returns:
-        matrix: 2xn dimension, the prior mean of x(k) i.e. E[x(k) | y(:k-1)]
+        m_minus (matrix): 2xn dimension, the prior mean of x(k) i.e. E[x(k) | y(:k-1)]
+        m (matrix): 2xn dimension, the posterior mean of x(k) i.e. E[x(k) | y(:k)]
+        P_minus (list): list of matrix, each is the prior variance of x(k)
+        P (list): list of matrix, each is the posterior variance of x(k)
     '''
-    m_minus = np.matrix([y[0], 0]).T # mean of the prior of x1, in column
-    P_minus = np.matrix(np.identity(2))
-    n = y.size # number of observations
-    H = np.matrix([1,0]) # H is a row
+    m_minus = np.matrix(np.empty((2,n))) # prior mean of x(k)
+    P_minus = [None] * n # prior variance of x(k)    
 
-    prior_means = np.matrix(np.empty((2,n)))
-    prior_means[:,0] = m_minus
+    m = np.matrix(np.empty((2,n))) # posterior mean of x(k)
+    P = [None] * n # posterior variance of x(k)
 
-    for k in range(1,n):
-        # the update step to calculate the posterior mean of x(k-1)        
-        S = np.asscalar(H * P_minus * H.T) + R # S is scalar
-        K = P_minus * H.T * (1 / S) # K is a column
-        v = y[k-1] - np.asscalar(H * m_minus) # v is scalar
+    for k in range(n):
+        if k == 0:
+            # predict step to assign the prior of x(1)
+            m_minus[:,k] = np.matrix([y[0], 0]).T # set prior mean of x(1)
+            P_minus[k] = np.matrix(np.identity(2)) # set prior variance of x(1)
+        else:
+            # the predict step for x(k) to calculate the prior of x(k)
+            m_minus[:,k] = A * m[:,k-1]
+            P_minus[k] = A * P[k-1] * A.T + Q
 
-        m = m_minus + K * v # posterior mean of x(k-1)
-        P = P_minus - K * S * K.T # posterior variance of x(k-1)
+        # the update step to calculate the posterior mean of x(k)        
+        S = np.asscalar(H * P_minus[k] * H.T) + R # S is scalar
+        K = P_minus[k] * H.T * (1 / S) # K is a column
+        v = y[k] - np.asscalar(H * m_minus[:,k]) # v is scalar
 
-        # now the predict step for x(k) to calculate the prior of x(k)
-        m_minus = A * m
-        P_minus = A * P * A.T + Q
+        m[:,k] = m_minus[:,k] + K * v # posterior mean of x(k)
+        P[k] = P_minus[k] - K * S * K.T # posterior variance of x(k)
+            
+    return m_minus, m, P_minus, P
 
-        prior_means[:,k] = m_minus
-    return prior_means
+def mse(R, Q, A):
+    m_minus, m, P_minus, P = filtering(R, Q, A)
+    predicted_y = (H * m_minus).T
+    return np.linalg.norm(y - predicted_y, ord=2)**2 / n
 
-def predict_y(y, R, Q, A):
-    '''
-    Returns:
-        matrix: nx1 dimension for E[y(k) | x(k)]
-    '''
-    H = np.matrix([1,0])
-    predicted_y = H * predict_states(y, R, Q, A)
-    return predicted_y.T
-
-def mse(y, R, Q, A):
-    return np.linalg.norm(y - predict_y(y, R, Q, A), ord=2)**2 / y.size
-    
+def objective(theta):
+    R = theta[0]
+    Q = np.matrix([
+        [theta[1], 0], 
+        [0, theta[2]]
+    ])
+    A = np.matrix([
+        [theta[3], theta[4]], 
+        [0, theta[5]]
+    ])     
+    return mse(R, Q, A)
