@@ -60,3 +60,29 @@ def objective(theta):
         [0, theta[5]]
     ])     
     return mse(R, Q, A)
+
+##################################
+# Part A
+##################################
+np.set_printoptions(precision=5)
+
+bounds = [(1e-8, None)] * 6
+res = minimize(objective, np.ones(6)/100, method='L-BFGS-B', bounds=bounds)
+theta = res.x
+R = theta[0]
+Q = np.matrix([
+    [theta[1], 0], 
+    [0, theta[2]]
+])
+A = np.matrix([
+    [theta[3], theta[4]], 
+    [0, theta[5]]
+])
+print('Part A. Result of this optimization:')
+print('success: {}'.format(res.success))
+print('message: {}'.format(res.message))
+print('R: {:.4f}'.format(R))
+print('Q: ')
+print(Q)
+print('A: ')
+print(A)
