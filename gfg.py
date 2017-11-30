@@ -206,3 +206,77 @@ for _ in range(t):
     N = int(input())
     a = list(map(int, input().split()))
     print(bricks(a))        
+
+# KnightL on a Chessboard
+
+# def bfs(s, G):
+#     for vertex v in G:
+#         v.color = white
+#         v.dist = inf
+#         v.parent = null 
+#     s.dist = 0 
+#     s.color = gray
+#     q = queue.Queue()
+#     q.enqueue(s)
+#     while q.not_empty():
+#         u = q.dequeue()
+#         for each v that u connects to:
+#             if v.color == white:
+#                 q.enqueue(v)
+#                 v.color = gray
+#                 v.dist = u.dist + 1
+#                 v.parent = u
+#         u.color = black
+def check_cell_on_board(n,i,j):
+    # check if cell (i,j) is on board n x n
+    if i < 1 or i > n:
+        return False
+    if j < 1 or j > n:
+        return False
+    return True
+
+def knight(n,a,b):
+    # go from (1,1) to (n,n) using knight(a,b) moves
+    colors = [[0 for j in range(n+1)] for i in range(n+1)]
+    dist = [[sys.maxsize for j in range(n+1)] for i in range(n+1)]
+    dist[1][1] = 0
+    colors[1][1] = 1
+    q = queue.Queue()
+    q.put((1,1))
+    while not q.empty():
+        u = q.get()
+        # cell (i,j) is connected to (i+-a,j+-b) and (i+-b,j+-a)
+        i, j = u
+        connected = []
+        for x in [i+a, i-a]:
+            for y in [j+b, j-b]:
+                if check_cell_on_board(n,x,y):
+                    connected.append((x,y))
+        for x in [i+b,i-b]:
+            for y in [j+a,j-a]:
+                if check_cell_on_board(n,x,y):
+                    connected.append((x,y))
+        for v in connected:
+            x,y = v
+            if colors[x][y] == 0:
+                q.put(v)
+                colors[x][y] = 1 
+                dist[x][y] = dist[i][j] + 1
+                # if destination found
+                if x ==n and y == n:
+                    return dist[x][y]
+        colors[i][j] = 2
+    # if cell (n,n) is never discovered then it is not reachable from (1,1)
+    return -1
+
+n = int(input())
+res = [[None for i in range(n)] for j in range(n)]
+for a in range(1,n):
+    for b in range(1,n):
+        if b < a:
+            res[a][b] = res[b][a]
+        else:
+            res[a][b] = knight(n,a,b)
+        print(res[a][b],end=" ")
+        if b == n-1:
+            print()
