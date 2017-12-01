@@ -280,3 +280,19 @@ for a in range(1,n):
         print(res[a][b],end=" ")
         if b == n-1:
             print()
+
+# 64. Minimum Path Sum
+def minPathSum(self, grid):
+    # minpath(i,j) = grid[i][j] + smaller of minpath(i+1,j) and minpath(i,j+1)
+    m, n = len(grid), len(grid[0])
+    cost = [[None for j in range(n)] for i in range(m)]
+    for i in range(m-1,-1,-1):
+        for j in range(n-1,-1,-1):
+            cost[i][j] = grid[i][j]
+            if i+1 < m and j+1 < n:
+                cost[i][j] += min(cost[i+1][j], cost[i][j+1])
+            elif i+1 < m:
+                cost[i][j] += cost[i+1][j]
+            elif j+1 < n:
+                cost[i][j] += cost[i][j+1]
+    return cost[0][0]
