@@ -296,3 +296,33 @@ def minPathSum(self, grid):
             elif j+1 < n:
                 cost[i][j] += cost[i][j+1]
     return cost[0][0]
+
+# 1. Two Sum
+def twoSum(self, nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: List[int]
+    """
+    # if you want to check if target can be written as a sum of e in nums
+    # f(n,s) = f(n-1,s) or f(n-1,s-a[n])
+    # n = len(nums)
+    # mat = [[False for j in range(target+1)] for i in range(n+1)]
+    # for i in range(n+1):
+    #     mat[i][0] = True
+    # for i in range(1,n+1):
+    #     for j in range(1,target+1):
+    #         if j - nums[i-1] >= 0:
+    #             mat[i][j] = mat[i-1][j] or mat[i-1][j - nums[i-1]]
+    # return mat[n][target]
+    # now the two sum problem
+    # map a key := element to its index in nums
+    d = dict()
+    for j in range(len(nums)):
+        e = nums[j]
+        if target-e in d:
+            return [d[target-e], j]
+        d[e] = j
+    return [] # if nothing found
+
+# 2. Add Two Numbers
