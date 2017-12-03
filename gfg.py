@@ -325,4 +325,90 @@ def twoSum(self, nums, target):
         d[e] = j
     return [] # if nothing found
 
-# 2. Add Two Numbers
+# 3. Longest Substring Without Repeating Characters
+def lengthOfLongestSubstring(self, s):
+    n = len(s)
+    if n < 1:
+        return 0
+    # i,j := start and end point of substring under examination
+    i, j = 0, 0    
+    maxlen = 1
+    d = {s[0]: 0}
+    # only loop until before j hits the last index n-1, once j hits that and i is somewhere,
+    # maxlen cannot increase further by moving i forward
+    while (j+1 < n):
+        # we already have tested that s(i,j) has no duplicate here 
+        # now try increasing j, the end point
+        # test if s[j+1] is in s(i,j)
+        if s[j+1] in d:
+            # k is the index of the duplicate 
+            k = d[s[j+1]]
+            if k >= i:
+                # this means the duplicate is in s(i,j)
+                # there is a duplicate, maxlen doesn't change
+                i = k + 1                
+            else:
+                # here the dup is not in s(i,j)
+                # eliminates the need to drop the elements from s[i:k] from d
+                # s(i,j) can also be extended
+                maxlen = max(maxlen, j+1-i+1)
+        else:            
+            # now your s(i,j) can be extended
+            maxlen = max(maxlen, j+1-i+1)
+        d[s[j+1]] = j+1
+        j += 1
+    return maxlen
+
+# 4. Median of Two Sorted Arrays
+import math
+def findMedianSortedArrays(self, nums1, nums2):
+    if len(nums1) <= len(nums2):
+        A, B, m, n = nums1, nums2, len(nums1), len(nums2)
+    else:
+        A, B, m, n = nums2, nums1, len(nums2), len(nums1)    
+    odd = ((m+n) % 2 != 0)
+    begin, end = -1, m-1
+    while begin <= end:
+        i = math.ceil((begin+end)/2)
+        if odd:
+            j = (m+n+1) // 2 - 2 - i
+        else:
+            j = (m+n) // 2 - 2 - i
+
+        # corner case
+        if i == m-1: 
+            # there is no A[i+1]
+            min_right = B[j+1]
+            if j == -1:
+                max_left = A[i]
+            else:
+                max_left = max(A[i], B[j])            
+            if odd: 
+                return max_left
+            else:
+                return (max_left + min_right) / 2
+        
+        # corner case
+        if i == -1:
+            max_left = B[j]
+            if j == n-1:
+                min_right = A[i+1]
+            else:
+                min_right = min(A[i+1], B[j+1])
+            if odd: 
+                return min_right
+            else:
+                return (max_left + min_right) / 2
+
+        # found the median
+        if A[i] <= B[j+1] and B[j] <= A[i+1]:
+            max_left = max(A[i], B[j])
+            min_right = min(A[i+1], B[j+1])
+            return (max_left + min_right) / 2
+        
+        if A[i] > B[j+1]:
+            # i is too big
+            end = i - 1
+        else:
+            # i is too small
+            begin = i + 1
