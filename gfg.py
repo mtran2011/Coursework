@@ -412,3 +412,139 @@ def findMedianSortedArrays(self, nums1, nums2):
         else:
             # i is too small
             begin = i + 1
+
+# 5. Longest Palindromic Substring
+def longest_palindromic_subsequence(self, s):
+    n = len(s)
+    if n == 0:
+        return
+    f = [[None for j in range(n)] for i in range(n)]
+    for k in range(n):
+        f[k][k] = s[k]
+        if k != n-1:
+            f[k+1][k] = ''
+    for length in range(1,n):
+        for i in range(n-length):
+            j = i + length
+            if s[i] == s[j]:
+                f[i][j] = s[i] + f[i+1][j-1] + s[j]
+            else:
+                if len(f[i][j-1]) >= len(f[i+1][j]):
+                    f[i][j] = f[i][j-1]
+                else:
+                    f[i][j] = f[i+1][j]
+    return f[0][n-1]
+
+def longest_palindromic_substring(self, s):
+    # DP method
+    n = len(s)
+    if n < 2:
+        return s
+    # f[i][j] is True if s[i:j+1] is Palindromic
+    f = [[False for j in range(n)] for i in range(n)]
+    for k in range(n):
+        f[k][k] = True
+        if k != n-1:
+            f[k+1][k] = True
+    maxlen, maxstr = 1, s[0]
+    for length in range(1,n):
+        for i in range(n-length):
+            j = i + length
+            if s[i] == s[j]:
+                f[i][j] = f[i+1][j-1]
+            else:
+                f[i][j] = False
+            # if you found a new Palindromic Substring
+            if f[i][j]:
+                if j-i+1 > maxlen:
+                    maxlen = j-i+1
+                    maxstr = s[i:j+1]
+    return maxstr
+
+def longest_palindromic_substring(self, s):
+    # start by searching for the middle point
+    n = len(s)
+    if n < 2:
+        return s
+    maxlen, maxstr = 1, s[0]
+    for i in range(n):
+        # case when s[i] is the middle
+        begin, end = i-1, i+1
+        while begin >= 0 and end <= n-1:
+            if s[begin] == s[end]:
+                if end - begin + 1 > maxlen:
+                    maxlen = end - begin + 1
+                    maxstr = s[begin:end+1]
+                begin -= 1
+                end += 1
+            else:
+                break
+        # case when s[i] == s[i+1] and they are the two middle
+        if i != n-1 and s[i] == s[i+1]:
+            # have got a length 2 Palindromic Substring here
+            if maxlen < 2:
+                maxlen == 2
+                maxstr = s[i:i+2]
+            begin, end = i-1, i+2
+            while begin >= 0 and end <= n-1:
+                if s[begin] == s[end]:
+                    if end - begin + 1 > maxlen:
+                        maxlen = end - begin + 1
+                        maxstr = s[begin:end+1]
+                    begin -= 1
+                    end += 1
+                else:
+                    break
+    return maxstr
+
+# 11. Container With Most Water
+def maxArea(self, height):
+    n = len(height)
+    begin, end = 0, n-1
+    maxarea = 0
+    while begin < end:
+        if height[begin] < height[end]:
+            current = height[begin] * (end - begin)
+            begin += 1
+        else:
+            current = height[end] * (end - begin)
+            end -= 1
+        if current > maxarea:
+            maxarea = current
+    return maxarea
+
+# 15. 3Sum
+def two_sum(self, a, target):
+    # there can be more than one solutions
+    # return the two numbers not the two indexes
+    ans = []
+    n = len(a)
+    if n < 2:
+        return []
+    d = {}
+    for i in range(n):
+        if target - a[i] in d:
+            ans.append((target - a[i], a[i]))
+        d[a[i]] = i
+    return set(ans)
+
+def threeSum(self, nums):
+    nums.sort() # to avoid duplicate combos
+    n = len(nums)
+    ans = []
+    for i in range(n-2):
+        if i > 0 and nums[i] == nums[i-1]:
+            # to avoid duplicate combos; there are duplicates in nums
+            continue
+        pairs = self.two_sum(nums[i+1:], 0 - nums[i])
+        for left, right in pairs:
+            ans.append([nums[i], left, right])
+    return ans
+
+# 42. Trapping Rain Water
+def trap(self, height):
+    n = len(height)
+    if n < 3:
+        return 0
+    maxleft, maxright = 0, 0
+    for i in range(1,n-1):
