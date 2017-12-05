@@ -546,5 +546,220 @@ def trap(self, height):
     n = len(height)
     if n < 3:
         return 0
-    maxleft, maxright = 0, 0
-    for i in range(1,n-1):
+    # for each index i, find the max on its left and on its right
+    maxleft = [None for _ in range(n)]
+    maxleft[0], runningleft = 0, 0
+    maxright = [None for _ in range(n)]
+    maxright[n-1], runningright = 0, 0
+    for i in range(1,n):
+        if height[i-1] > runningleft:
+            runningleft = height[i-1]
+        maxleft[i] = runningleft
+    for i in range(n-2,-1,-1):
+        if height[i+1] > runningright:
+            runningright = height[i+1]
+        maxright[i] = runningright
+    ans = 0
+    for i in range(n):
+        lower = min(maxleft[i], maxright[i])
+        if lower - height[i] > 0:
+            ans += lower - height[i]
+    return ans
+
+def trap(self, height):
+    n = len(height)
+    if n < 3:
+        return 0
+    l, r = 0, n-1
+    # maxleft of position l+1, and maxright of position r-1
+    maxleft, maxright = height[l], height[r]
+    ans = 0
+    while l <= r-2:
+        # find the appropriate i and fill in possible rain trapped there
+        if maxleft <= maxright:
+            i = l + 1
+            rain_at_i = max(maxleft - height[i], 0)
+            l += 1
+            maxleft = max(maxleft, height[l])
+        else:
+            i = r - 1
+            rain_at_i = max(maxright - height[i], 0)
+            r -= 1
+            maxright = max(maxright, height[r])
+        ans += rain_at_i
+    return ans
+
+# 88. Merge Sorted Array
+def merge(self, nums1, m, nums2, n):
+    i, j = m-1, n-1
+    while i >= 0 and j >= 0:
+        if nums1[i] > nums2[j]:
+            nums1[i+j+1] = nums1[i]
+            i -= 1
+        else:
+            nums1[i+j+1] = nums2[j]
+            j -= 1
+    while j >= 0:
+        nums1[j] = nums2[j]
+        j -= 1
+    return
+
+# 53. Maximum Subarray
+def maxSubArray(self, nums):
+    n = len(nums)
+    if n < 1:
+        return 0
+    f = [None for _ in range(n)]
+    f[0] = nums[0]
+    for i in range(1,n):
+        f[i] = nums[i]
+        if f[i-1] > 0:
+            f[i] += f[i-1]
+    return max(f)
+
+# 33. Search in Rotated Sorted Array
+def binary_search(self, nums, target, begin, end):
+    while begin <= end:
+        mid = (begin + end) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            begin = mid + 1
+        else:
+            end = mid - 1
+    return -1    
+
+def search(self, nums, target):    
+    n = len(nums)
+    if n < 1:
+        return -1
+    # first find the minimum element at some unknown index k 
+    begin, end = 0, n-1
+    while (begin < end):
+        mid = (begin + end) // 2
+        # if mid is on the left group
+        if nums[mid] > nums[end]:
+            begin = mid + 1
+        else:
+            # mid is on the right group
+            end = mid
+    # begin and end converges to the min element
+    if target >= nums[begin] and target <= nums[-1]:
+        # begin does not change here
+        end = n-1
+    else:
+        begin = 0
+        end -= 1
+    return self.binary_search(nums, target, begin, end)
+
+# 112. Path Sum
+def is_leaf(self, node):    
+    if node.left is None and node.right is None:
+        return True
+    return False
+def hasPathSum(self, root, target):
+    # using recursive
+    if root is None:
+        return False
+    if self.is_leaf(root):
+        if target == root.val:
+            return True
+        else:
+            return False
+    # here root is not leaf, has at least 1 child
+    # new_target could be zero
+    new_target = target - root.val    
+    if self.hasPathSum(root.left, new_target):
+        return True    
+    if self.hasPathSum(root.right, new_target):
+        return True
+    return False
+
+# 733. Flood Fill
+def floodFill(self, image, sr, sc, newColor):
+    # using stack
+    if image[sr][sc] == newColor:
+        return image
+
+    from queue  import LifoQueue
+    m, n = len(image), len(image[0])
+    stack = LifoQueue()
+    stack.put((sr,sc))
+    # while stack is not empty
+    while not stack.empty():
+        r, c = stack.get()
+        # for each node that current node connects to
+        # if it is not visited yet, push it to stack to store it
+        for x, y in [(r+1,c), (r-1,c), (r,c+1), (r,c-1)]:
+            if 0 <= x <= m-1 and 0 <= y <= n-1:
+                if image[r][c] == image[x][y]:
+                    stack.put((x,y))
+        # mark it so that next time, an adjacent cell knows it's visited and don't try to repaint it again
+        image[r][c] = newColor
+    return image
+
+def floodFill(self, image, sr, sc, newColor):
+    # using recursive
+    # for each cell u that s connects to:
+        # fill(u)
+    # paint s to newcolor
+    m, n = len(image), len(image[0])
+    # for each cell in 4 way direction
+    for r, c in [(sr+1,sc), (sr-1,sc), (sr,sc+1), (sr,sc-1)]:
+        # if this is a valid cell
+        if 0 <= r and r <= m-1 and 0 <= c and c <= n-1:
+            # if this is connected via same color with source
+            if image[r][c] == image[sr][sc]:
+                # r, c is connected to sr, sc
+                # BUT CHECK HERE IF r, c HAS BEEN VISITED, OR GRAYED OUT BEFORE
+                self.floodFill(image, r, c, newColor)
+    # once done visiting lower level nodes
+    image[sr][sc] == newColor
+    # WRONG. SEE WHY?
+    # two adjacent cells s1 and s2, when you try to fill s2 you visit s1 again
+    # so you need something to check if this has been visited before so you do not revisit
+
+def fill(self, image, r, c, old, new):
+    # using recursive
+    # need a base case
+    if r < 0 or r >=m or c < 0 or c >= n:
+        return
+    if image[r][c] == new or image[r][c] != old:
+        return
+    # now the recursive case
+    image[r][c] == new
+    fill(r+1, c, old, new)
+    fill(r-1, c, old, new)
+    fill(r, c+1, old, new)
+    fill(r, c-1, old, new)
+    
+def floodFill(self, image, sr, sc, newColor):
+    m, n = len(image), len(image[0])
+    orig_color = image[sr][sc]    
+    self.fill(image, sr, sc, orig_color, newColor)
+    return image
+
+def floodFill(self, image, sr, sc, newColor):
+    if image[sr][sc] == newColor:
+        return image
+    m, n = len(image), len(image[0])
+    def fill(r, c, old, new):
+        if r < 0 or r >=m or c < 0 or c >= n:
+            return
+        if image[r][c] != old:
+            return
+        image[r][c] = new
+        fill(r+1, c, old, new)
+        fill(r-1, c, old, new)
+        fill(r, c+1, old, new)
+        fill(r, c-1, old, new)
+
+    fill(sr, sc, image[sr][sc], newColor)
+    return image
+
+# 79. Word Search
+# Given a 2D board and a word, find if the word exists in the grid.
+# The word can be constructed from letters of sequentially adjacent cell, 
+# where "adjacent" cells are those horizontally or vertically neighboring. 
+# The same letter cell may not be used more than once.
+# This doesn't have to form a path
