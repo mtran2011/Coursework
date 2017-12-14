@@ -63,6 +63,7 @@ class Solution:
         included = [s + [nums[-1]] for s in not_included]
         return not_included + included
 
+# 94. Binary Tree Inorder Traversal
 # Definition for a binary tree node.
 # class TreeNode:
 #     def __init__(self, x):
@@ -76,3 +77,41 @@ class Solution:
         :type root: TreeNode
         :rtype: List[int]
         """
+        # recursively
+        # recursive base case
+        if root is None:
+            return []
+        l = self.inorderTraversal(root.left) 
+        m = [root.val] 
+        r = self.inorderTraversal(root.right)
+        return l + m + r
+
+class Solution:
+    def inorderTraversal(self, root):
+        from queue import LifoQueue
+        stack = LifoQueue()
+        current = root
+        while current is not None:
+            stack.put(current)
+            current = current.left
+        # now that current is none
+        mid = stack.pop()
+        print(mid)
+        current = mid.right
+        # repeat the while loop
+
+class Solution:
+    def inorderTraversal(self, root):
+        from queue import LifoQueue
+        res = []
+        stack = LifoQueue()
+        current = root
+        while current is not None or not stack.empty():
+            while current is not None:
+                stack.put(current)
+                current = current.left
+            # now that current is none
+            mid = stack.get()
+            res.append(mid.val)
+            current = mid.right
+        return res
