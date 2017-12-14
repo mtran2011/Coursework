@@ -115,3 +115,83 @@ class Solution:
             res.append(mid.val)
             current = mid.right
         return res
+
+# 111. Minimum Depth of Binary Tree
+# The minimum depth is the number of nodes along the shortest path from the root node down to the nearest leaf node.
+class Solution:
+    def minDepth(self, root):
+        # recursive method
+        # recursive base case
+        if root is None:
+            # only for the weird case 
+            # otherwise usually mindepth is not called on a null node
+            return 0
+        if root.left is None and root.right is None:
+            return 1
+        # now that root has at least 1 child
+        if root.left is None:
+            return 1 + self.minDepth(root.right)
+        if root.right is None:
+            return 1 + self.minDepth(root.left)
+        # now that root has 2 children
+        return 1 + min(self.minDepth(root.right), self.minDepth(root.left))
+
+class Solution:
+    def minDepth(self, root):
+        # level order traversal, more efficient for mindepth
+        # assume each node has an attribute node.level
+        if root is None:
+            return 0
+        from queue import Queue
+        root.level = 1
+        reached_leaf = False
+        q = Queue()
+        q.enqueue(root)
+        # never enqueue a None node
+        while not reached_leaf:
+            current = q.dequeue()
+            # if current is a leaf
+            if current.left is None and current.right is None:
+                reached_leaf = True
+                return current.level
+            # now that current has at least 1 child
+            if current.left is not None:
+                current.left.level = current.level + 1
+                q.enqueue(current.left)
+            if current.right is not None:
+                current.right.level = current.level + 1
+                q.enqueue(current.level)
+
+# 98. Validate Binary Search Tree
+class Solution:
+    def traversal(self, root):
+        ''' return is_bst, min, max of this whole tree starting at root
+        '''
+        # this method should never be called on a null root
+        # recursive base case
+        if root.left is None and root.right is None:
+            return True, root.val, root.val
+        
+        # left_min should be min of this whole tree starting at root 
+        # also need to check left_max <= root.val
+        if root.left is not None:
+            left_is_bst, left_min, left_max = traversal(root.left)
+        else:
+            left_is_bst, left_min, left_max = True, root.val, root.val            
+        
+        # right_max should be max of this whole tree starting at root
+        # need to check if root.val <= right_min
+        if root.right is not None:
+            right_is_bst, right_min, right_max = traversal(root.right)
+        else:
+            right_is_bst, right_min, right_max = True, root.val, root.val
+
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        # valid BST: everything on the left subtree is less than mid
+        # this is a valid bst if root.left is a valid bst, root.right is a valid bst, and max of left subtree < this < min of right subtree
+        # think of the relationship between this and in order tree traversal
+        # how can you return the right most (should be the max) and left most (should be the min) of a subtree
