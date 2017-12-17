@@ -299,6 +299,97 @@ class Solution:
             return True
         return self.traversal(root)[0]
 
+# 98. Validate Binary Search Tree
 class Solution:
     def isValidBST(self, root):
         # use in order traversal iterative
+        # the key is, when you print the list from in order traversal, you get a sorted ascending list
+        if root is None:
+            return True
+        from queue import LifoQueue
+        stack = LifoQueue()
+        current = root
+        pre = None
+        while current is not None or not stack.empty():
+            while current is not None:
+                stack.put(current)
+                current = current.left
+            # now that current has become none
+            x = stack.get()
+            if pre is not None:
+                if pre.val >= x.val:
+                    return False
+            pre = x
+            current = x.right
+        return True
+
+# 230. Kth Smallest Element in a BST
+class Solution:
+    def kthSmallest(self, root, k):
+        count = 0
+        from queue import LifoQueue
+        stack = LifoQueue()
+        current = root
+        while current is not None or not stack.empty():
+            while current is not None:
+                stack.put(current)
+                current = current.left
+            # now that current has become none
+            x = stack.get()
+            count += 1
+            if count == k:
+                return x.val
+            current = x.right
+
+# 198. House Robber
+class Solution:
+    def rob(self, nums):
+        # f(n-1) = max gain until house at position n-1, inclusive
+        # f(n-1) = a[n-1] + f(n-3) if robbing house at index n-1, or f(n-2) if not robbing at index n-1
+        # f(0) = a[0]
+        n = len(nums)
+        if n < 1:
+            return 0
+        f = [None for _ in range(n)]
+        f[0] = nums[0]
+        for i in range(1,n):
+            if i-2 >= 0:
+                f[i] = max(f[i-1], nums[i] + f[i-2])
+            else:
+                f[i] = max(f[i-1], nums[i])
+        return f[-1]
+
+# 121. Best Time to Buy and Sell Stock
+class Solution:
+    def maxProfit(self, prices):
+        n = len(prices)
+        if n < 2:
+            return 0
+        profit_if_buy_here = [None for _ in range(n)]
+        profit_if_buy_here[-1] = 0
+        local_max_price = prices[-1]
+        for i in range(n-1,0,-1):
+            if prices[i] > local_max_price:
+                local_max_price = prices[i]
+            profit_if_buy_here[i-1] = local_max_price - prices[i-1]
+        return max(profit_if_buy_here)
+
+# further optimize
+class Solution:
+    def maxProfit(self, prices):
+        n = len(prices)
+        if n < 2:
+            return 0
+        global_max_profit = 0
+        # to hold max of prices[i:]
+        local_max_price = prices[-1]
+        for i in range(n-1,0,-1):
+            if prices[i] > local_max_price:
+                local_max_price = prices[i]
+            local_max_profit = local_max_price - prices[i-1]
+            if local_max_profit > global_max_profit:
+                global_max_profit = local_max_profit
+        return global_max_profit
+
+# 647. Palindromic Substrings
+# Given a string, your task is to count how many palindromic substrings in this string.
