@@ -507,3 +507,27 @@ class Solution:
             if len(level_list) > 0:
                 res.append(level_list)
         return res
+class Solution:
+    def levelOrder(self, root):
+        # how can you combine q1 and q2 into 1 queue
+        # do not use an inner while loop; instead check length of level and use for loop
+        from queue import Queue
+        q = Queue()
+        res = []
+        if root is None:
+            return []
+        q.put(root)
+        while not q.empty():
+            # len of the level you are about to process
+            level_length = q.qsize()
+            level_list = []
+            for _ in range(level_length):
+                node = q.get()
+                level_list.append(node.val)
+                if node.left is not None:
+                    q.put(node.left)
+                if node.right is not None:
+                    q.put(node.right)
+            if len(level_list) > 0:
+                res.append(level_list)
+        return res
