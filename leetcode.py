@@ -391,5 +391,71 @@ class Solution:
                 global_max_profit = local_max_profit
         return global_max_profit
 
+# 494. Target Sum
+class Solution:
+    def findTargetSumWays(self, nums, S):
+        if (S + sum(nums)) % 2 != 0:
+            return 0
+        n = len(nums)
+        if n < 1:
+            return 0
+        target = (S + sum(nums)) // 2
+        f = [[None for j in range(target+1)] for i in range(n+1)]
+        for i in range(n+1):
+            # if target is j=0, there is one way
+            f[i][0] = 1 
+        for j in range(1,target+1):
+            # if no num is used, there is zero way
+            f[0][j] = 0
+        # i means using up to position i in nums, j is the target sum
+        for i in range(1,n+1):
+            for j in range(1,target+1):
+                f[i][j] = f[i-1][j]
+                if j - nums[i-1] >= 0:
+                    f[i][j] += f[i-1][j - nums[i-1]]
+        return f[n][target]
+
+# further optimize
+class Solution:
+    def findTargetSumWays(self, nums, S):
+        if (S + sum(nums)) % 2 != 0:
+            return 0
+        n = len(nums)
+        if n < 1:
+            return 0
+        target = (S + sum(nums)) // 2
+        f = [[None for j in range(target+1)] for i in range(n+1)]
+        for i in range(n+1):
+            # if target is j=0, there is one way
+            f[i][0] = 1 
+        for j in range(1,target+1):
+            # if no num is used, there is zero way
+            f[0][j] = 0
+        # i means using up to position i in nums, j is the target sum
+        for i in range(1,n+1):
+            for j in range(target, nums[i-1]-1, -1):
+                f[i][j] = f[i-1][j] + f[i-1][j - nums[i-1]]
+        return f[n][target]
+
+# further optimize
+class Solution:
+    def count_subsets_sum(self, nums, target):
+        n = len(nums)
+        if n < 1:
+            return 0
+        # this initialization is equivalent to when i=0, using 0 num
+        f = [0 for j in range(target+1)]
+        f[0] = 1 # when the target is 0, there is 1 way
+        for i in range(1,n+1):
+            for j in range(target, nums[i-1]-1, -1):
+                f[j] += f[j - nums[i-1]]
+        return f[target]
+
+    def findTargetSumWays(self, nums, S):
+        if (S + sum(nums)) % 2 != 0:
+            return 0        
+        target = (S + sum(nums)) // 2
+        return self.count_subsets_sum(nums, target)
+    
 # 647. Palindromic Substrings
 # Given a string, your task is to count how many palindromic substrings in this string.
