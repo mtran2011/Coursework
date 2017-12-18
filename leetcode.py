@@ -457,5 +457,53 @@ class Solution:
         target = (S + sum(nums)) // 2
         return self.count_subsets_sum(nums, target)
     
-# 647. Palindromic Substrings
-# Given a string, your task is to count how many palindromic substrings in this string.
+# 102. Binary Tree Level Order Traversal
+class Solution:
+    def levelOrder(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        q = Queue()
+        res = []
+        q.enqueue(root)
+        while not q.empty():
+            node = q.dequeue()
+            res.append(node.val)
+            if node.left is not None:
+                q.enqueue(node.left)
+            if node.right is not None:
+                q.enqueue(node.right)
+        # this cannot return a list of list
+
+class Solution:
+    def levelOrder(self, root):
+        from queue import Queue
+        q1, q2 = Queue(), Queue()
+        res = []
+        if root is None:
+            return []
+        q1.put(root)
+        while not q1.empty() or not q2.empty():
+            # at start of each loop, either q1 must be empty or q2 must be empty
+            # alternating between 2 queues
+            level_list = []
+            if not q1.empty():
+                while not q1.empty():
+                    node = q1.get()
+                    level_list.append(node.val)
+                    if node.left is not None:
+                        q2.put(node.left)
+                    if node.right is not None:
+                        q2.put(node.right)
+            else:
+                while not q2.empty():
+                    node = q2.get()
+                    level_list.append(node.val)
+                    if node.left is not None:
+                        q1.put(node.left)
+                    if node.right is not None:
+                        q1.put(node.right)
+            if len(level_list) > 0:
+                res.append(level_list)
+        return res
