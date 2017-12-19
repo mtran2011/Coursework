@@ -531,3 +531,22 @@ class Solution:
             if len(level_list) > 0:
                 res.append(level_list)
         return res
+
+# 91. Decode Ways
+class Solution:
+    def numDecodings(self, s):
+        n = len(s)
+        if n < 1:
+            return 0
+        valid = list(map(str, range(1,27)))
+        g = [None for _ in range(n+1)]
+        g[0] = 1
+        for j in range(1,n+1):
+            if int(s[j-1]) > 0:
+                g[j] = g[j-1]                
+            else:
+                g[j] = 0
+            if j-2 >= 0:
+                if s[j-2:j] in valid:
+                    g[j] += g[j-2]
+        return g[-1]
