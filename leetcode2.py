@@ -277,3 +277,256 @@ class Solution:
             for lst in self.permute(nums[:i] + nums[i+1:]):
                 res.append([nums[i]] + lst)
         return res
+
+# 515. Find Largest Value in Each Tree Row
+class Solution:
+    def largestValues(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if root is None:
+            return []
+        from queue import Queue
+        q = Queue()
+        # never put a null node into this q
+        q.put(root)
+        res = []
+        while not q.empty():
+            # this is before exploring a new level
+            maxlevel = None
+            for _ in range(q.qsize()):
+                # use q.size to look at nodes only on that same level
+                node = q.get()
+
+                if node.left is not None:
+                    q.put(node.left)
+                if node.right is not None:
+                    q.put(node.right)
+
+                if maxlevel is None:
+                    maxlevel = node.val
+                else:
+                    maxlevel = max(maxlevel, node.val)
+            # now you have finished exploring this level
+            res.append(maxlevel)
+        return res
+
+# 513. Find Bottom Left Tree Value
+class Solution:
+    def findBottomLeftValue(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        from queue import Queue
+        q = Queue()
+        # never put a null node into this q
+        q.put(root)
+        leftmost = None
+        while not q.empty():
+            for i in range(q.qsize()):
+                # use q.size to look at nodes only on that same level
+                node = q.get()
+                if node.left is not None:
+                    q.put(node.left)
+                if node.right is not None:
+                    q.put(node.right)
+                
+                if i == 0:
+                    leftmost = node.val
+        return leftmost
+
+# 103. Binary Tree Zigzag Level Order Traversal
+class Solution:
+    def zigzagLevelOrder(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        if root is None:
+            return []
+        from queue import Queue
+        q = Queue()
+        # never put a null node into this q
+        q.put(root)
+        res = []
+        level = 0
+        while not q.empty():
+            thislevel = []
+            for _ in range(q.qsize()):
+                node = q.get()
+                if node.left is not None:
+                    q.put(node.left)
+                if node.right is not None:
+                    q.put(node.right)
+                thislevel.append(node.val)
+            # if level is even, go left to right
+            # if level is odd, go right to left
+            if level % 2 != 0:
+                thislevel = thislevel[::-1]
+            res.append(thislevel)
+            level += 1 # prepare for next level
+        return res
+
+# 417. Pacific Atlantic Water Flow
+class Solution:
+    def pacificAtlantic(self, matrix):
+        """
+        :type matrix: List[List[int]]
+        :rtype: List[List[int]]
+        """
+        if len(matrix) < 1:
+            return []
+        m, n = len(matrix), len(matrix[0])
+        if m < 1 or n < 1:
+            return []
+        atlantic = [[False for _ in range(n)] for _ in range(m)]
+        pacific = [[False for _ in range(n)] for _ in range(m)]        
+        for j in range(n):
+            atlantic[-1][j] = True
+            pacific[0][j] = True
+        for i in range(m):
+            atlantic[i][-1] = True
+            pacific[i][0] = True
+        # fill in pacific
+        # this is wrong because water can also flow [i,j] to [i,j+1] to pacific
+        # how about do the reverse? instead of asking if [i,j] can flow to some True cell
+        # from each True cell, look for a higher cell that can flow down to it
+        for i in range(1,m):
+            for j in range(1,n):
+                if pacific[i-1][j] is True and matrix[i][j] >= matrix[i-1][j]:
+                    pacific[i][j] = True
+                if pacific[i][j-1] is True and matrix[i][j] >= matrix[i][j-1]:
+                    pacific[i][j] = True
+        # fill in atlantic
+        for i in range(m-2,-1,-1):
+            for j in range(n-2,-1,-1):
+                if atlantic[i+1][j] is True and matrix[i][j] >= matrix[i+1][j]:
+                    atlantic[i][j] = True
+                if atlantic[i][j+1] is True and matrix[i][j] >= matrix[i][j+1]:
+                    atlantic[i][j] = True
+        # fill in combined
+        res = []
+        for i in range(m):
+            for j in range(n):
+                if pacific[i][j] and atlantic[i][j]:
+                    res.append([i,j])
+        return res
+
+class Solution:
+    def pacificAtlantic(self, matrix):
+        """
+        :type matrix: List[List[int]]
+        :rtype: List[List[int]]
+        """
+        if len(matrix) < 1:
+            return []
+        m, n = len(matrix), len(matrix[0])
+        if m < 1 or n < 1:
+            return []
+        from queue import Queue
+        atlantic = [[False for _ in range(n)] for _ in range(m)]
+        pacific = [[False for _ in range(n)] for _ in range(m)]
+        atlantic_q, pacific_q = Queue(), Queue()
+        for j in range(n):
+            atlantic[m-1][j] = True
+            atlantic_q.put((m-1,j))
+            pacific[0][j] = True
+            pacific_q.put((0,j))
+        for i in range(m):
+            atlantic[i][n-1] = True
+            atlantic_q.put((i,n-1))
+            pacific[i][0] = True
+            pacific_q.put((i,0))
+        
+        # fill in connection to atlantic
+        while not atlantic_q.empty():
+            row, col = atlantic_q.get()
+            for i, j in [(row,col+1), (row,col-1), (row+1,col), (row-1,col)]:
+                if -1 < i < m and -1 < j < n:
+                    if matrix[i][j] >= matrix[row][col]:
+                        if atlantic[i][j] is False:
+                            atlantic[i][j] = True
+                            atlantic_q.put((i,j))
+        
+        while not pacific_q.empty():
+            row, col = pacific_q.get()
+            for i, j in [(row,col+1), (row,col-1), (row+1,col), (row-1,col)]:
+                if -1 < i < m and -1 < j < n:
+                    if matrix[i][j] >= matrix[row][col]:
+                        if pacific[i][j] is False:
+                            pacific[i][j] = True
+                            pacific_q.put((i,j))
+        
+        # fill in combined
+        res = []
+        for i in range(m):
+            for j in range(n):
+                if pacific[i][j] and atlantic[i][j]:
+                    res.append([i,j])
+        return res
+
+# 329. Longest Increasing Path in a Matrix
+# def dfs(G):
+#     for v in G.vertices:
+#         v.color = white
+#         v.parent = null
+#     for v in G.vertices:
+#         if v.color == white:
+#             visit(G,v)
+
+# def visit(G,v):
+#     # this method should be called only on white vertex
+#     v.color = gray
+#     v.start_time = time
+#     time += 1
+#     for u in v.connections:
+#         if u.color = white:
+#             u.parent = v
+#             visit(G,u)
+#     v.color = black
+#     v.end_time = time
+#     time += 1
+
+class Solution:
+    def visit(self, row, col, matrix, memo):
+        m, n = len(matrix), len(matrix[0])
+        # the smallest len of an increasing path is 1, aka the cell itself        
+        memo[row][col] = 1
+        # for each cell in the 4 direction
+        for i, j in [(row,col+1), (row,col-1), (row+1,col), (row-1,col)]:
+            # if this is a cell inside the matrix boundary
+            if -1 < i < m and -1 < j < n:                
+                if matrix[row][col] < matrix[i][j]:
+                    # visit [i,j] only if [i,j] is still a white vertex
+                    if memo[i][j] == 0:
+                        self.visit(i, j, matrix, memo)
+                    # if [i,j] was visited before via another dfs, then its memo value is already correct
+                    # if [i,j] was white, then you visit it above
+                    # so now memo[i,j] should be correct
+                    # now that you are done processing [i,j]
+                    if memo[i][j] + 1 > memo[row][col]:
+                        memo[row][col] = memo[i][j] + 1        
+    
+    def longestIncreasingPath(self, matrix):
+        if len(matrix) < 1:
+            return 0
+        m, n = len(matrix), len(matrix[0])
+        if n < 1:
+            return 0
+        # the memo matrix memoizes the len of longest path starting from each position
+        # it also marks visited or not, memo = 0 means not visited
+        memo = [[0 for _ in range(n)] for _ in range(m)]
+        maxpath = 1
+        for row in range(m):
+            for col in range(n):
+                if memo[row][col] == 0:
+                    # if not visited yet
+                    self.visit(row, col, matrix, memo)
+                # if [row,col] was visited before via another dfs, then its memo value is already correct
+                # if [row,col] was white, then you visit it above
+                # so now memo[row,col] should be correct
+                if memo[row][col] > maxpath:
+                    maxpath = memo[row][col]
+        return maxpath
