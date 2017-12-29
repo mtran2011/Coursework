@@ -530,3 +530,171 @@ class Solution:
                 if memo[row][col] > maxpath:
                     maxpath = memo[row][col]
         return maxpath
+
+# 542. 01 Matrix
+class Solution:
+    # dfs with memoization
+    # def dfs(G):
+    #     for v in G.V:
+    #         v.parent = None
+    #         v.color = white
+    #     global time = 0
+    #     for v in G.V:
+    #         if v.color == white:
+    #             visit(G,v)
+    # def visit(G,u):
+        # this visit method is only called on white vertex
+        # time += 1
+        # u.start_time = time
+        # u.color = gray
+        # for v in u.connected:
+        #     if v.color == white:
+        #         v.parent = u
+        #         visit(G,v)
+        # time += 1
+        # u.end_time = time
+    def visit(self, i, j, matrix, memo):
+        m, n = len(matrix), len(matrix[0])        
+        # recursive base case
+        if matrix[i][j] == 0:
+            memo[i][j] = 0
+        else:
+            memo[i][j] = 1e6 # mark it as gray
+            for row, col in [(i+1,j), (i-1,j), (i,j+1), (i,j-1)]:
+                if -1 < row < m and -1 < col < n:
+                    if memo[row][col] is None:
+                        self.visit(row, col, matrix, memo)
+                    # if [row,col] has never been visited, then you visit it above
+                    # if [row,col] was visited by another dfs before, then memo[row,col] is already correct
+                    # but hold on this is not really true
+                    # if you are exploring [i,j] by first moving 1 up, then now moving 1 to the right, you explore [i,j+1]
+                    # but when exploring [i,j+1], you also check out [i,j] again which now has a temp value from the previous up path
+                    # so the 2 lines below being here does not work
+                    # if memo[i][j] > 1 + memo[row][col]:
+                    #     memo[i][j] = 1 + memo[row][col]
+            for row, col in [(i+1,j), (i-1,j), (i,j+1), (i,j-1)]:
+                if -1 < row < m and -1 < col < n:
+                    if memo[i][j] > 1 + memo[row][col]:
+                        memo[i][j] = 1 + memo[row][col]
+            # why this method doesn't work
+            # if you move right (i,j) to (i,j+1), at (i,j+1) you only explore 3 paths 
+            # so excluding the path from (i,j+1) back to (i,j)
+            # the key for dfs to work easily is that if you go parent to child, there's no need to go child back to parent
+            # but here you need (i,j+1) back to (i,j)
+    
+    def updateMatrix(self, matrix):
+        # dfs with memoization
+        m, n = len(matrix), len(matrix[0])
+        memo = [[None for _ in range(n)] for _ in range(m)]
+        for i in range(m):
+            for j in range(n):
+                if memo[i][j] is None:
+                    self.visit(i, j, matrix, memo)
+                # now memo[i][j] holds correct value either by the visit above
+                # or via another dfs starting at a previous cell
+        return memo
+# in this problem you cannot do bfs starting from a non-zero cell
+# instead from each zero-cell, use it as root and start a bfs tree
+# recall that bfs gives the shortest path from this 0-cell to the 1-cell 
+# when you encounter a 1-cell, if the distance found by this bfs < current dist, then set current dist
+class Solution:
+    def explore(self, row, col, matrix, dist):
+        m, n = len(matrix), len(matrix[0])
+        from queue import Queue
+        q = Queue()
+        q.put((row,col))
+        while not q.empty():
+            i, j = q.get()
+            for r, c in [(i+1,j), (i-1,j), (i,j+1), (i,j-1)]:
+                if -1 < r < m and -1 < c < n:
+                    # (i,j) is like a parent of (r,c)
+                    if dist[i][j] + 1 < dist[r][c]:
+                        dist[r][c] = dist[i][j] + 1
+                        q.put((r,c))
+
+    def updateMatrix(self, matrix):
+        import sys
+        m, n = len(matrix), len(matrix[0])
+        dist = [[None for _ in range(n)] for _ in range(m)]
+        for i in range(m):
+            for j in range(n):
+                if matrix[i][j] == 0:
+                    dist[i][j] = 0
+                else:
+                    dist[i][j] = sys.maxsize
+        for i in range(m):
+            for j in range(n):
+                if matrix[i][j] == 0:
+                    # explore a bfs tree rooted at (i,j)
+                    self.explore(i, j, matrix, dist)
+        return dist
+# condense the above to 1 queue
+class Solution:
+    def updateMatrix(self, matrix):
+        import sys
+        from queue import Queue
+        m, n = len(matrix), len(matrix[0])
+        q = Queue()
+        dist = [[None for _ in range(n)] for _ in range(m)]
+        for i in range(m):
+            for j in range(n):
+                if matrix[i][j] == 0:
+                    dist[i][j] = 0
+                    # explore this 0-node later
+                    q.put((i,j))
+                else:
+                    dist[i][j] = sys.maxsize
+        while not q.empty():
+            i, j = q.get()
+            for r, c in [(i+1,j), (i-1,j), (i,j+1), (i,j-1)]:
+                if -1 < r < m and -1 < c < n:
+                    # (i,j) is like a parent of (r,c) if the dist works out
+                    if dist[i][j] + 1 < dist[r][c]:
+                        dist[r][c] = dist[i][j] + 1
+                        q.put((r,c))
+        return dist
+
+# 310. Minimum Height Trees
+# there are N nodes, you can check each node as the source, do a bfs from this source
+# bfs is O(V+E) and for a tree, V = N and E = N -1 so O(N) and repeat N times so O(N^2) in total
+class Solution:
+    def findMinHeightTrees(self, n, edges):
+        """
+        :type n: int
+        :type edges: List[List[int]]
+        :rtype: List[int]
+        """
+        # remember, this is a tree graph so it has to be all connected
+        # any connected graph without simple cycles is a tree
+        # if you trim down to 2 leafs connected to each other, 
+        # then either of them could serve as root of minimum height tree
+        # build a graph adjacency list
+        if len(edges) < 1:
+            return [0]
+        adj = {vertex : [] for vertex in range(n)}
+        for u, v in edges:
+            # the edge is (u,v) and (v,u)
+            adj[u].append(v)
+            adj[v].append(u)
+        leafs = []
+        for vertex in range(n):
+            if len(adj[vertex]) == 1:
+                leafs.append(vertex)
+        while len(adj) > 2:
+            nextlevel_leafs = []
+            for leaf in leafs:
+                potential_next_leaf = adj[leaf][0]
+                # severe the link between leaf and potential_next_leaf
+                adj[potential_next_leaf].remove(leaf)
+                adj.pop(leaf)
+                # check if this potential can be a leaf in next trimming round
+                if len(adj[potential_next_leaf]) == 1:
+                    nextlevel_leafs.append(potential_next_leaf)
+            leafs = nextlevel_leafs
+        return leafs
+
+# 127. Word Ladder
+# imagine the beginword is the source in a bfs
+# the endword is the node you want to reach from the source
+# bfs gives shortest path from source 
+# the word u connects to v if v has 1 letter changed from u
