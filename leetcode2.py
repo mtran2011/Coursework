@@ -705,7 +705,8 @@ class Solution:
             mydict[s] = mydict.get(s,0) + 1
         return mydict
 
-    def connected(self, word1, word2):        
+    def wrong_connected(self, word1, word2):
+        # this method is wrong in checking if word1 connects to word2
         if len(word1) != len(word2):
             return False
         d1 = self.word_to_dict(word1)
@@ -713,7 +714,19 @@ class Solution:
         diff = 0
         for s in set(list(d1.keys()) + list(d2.keys())):
             diff += abs(d1.get(s,0) - d2.get(s,0))
-        return diff < 2
+        return diff < 3
+
+    def connected(self, word1, word2):
+        # word2 is 1 letter changed from word1
+        if len(word1) != len(word2):
+            return False
+        diff = 0
+        for i in range(len(word1)):
+            if word1[i] != word2[i]:
+                diff += 1
+                if diff >= 2:
+                    return False
+        return diff == 1
 
     def ladderLength(self, beginWord, endWord, wordList):
         """
@@ -723,7 +736,9 @@ class Solution:
         :rtype: int
         """
         # build the adj list for the graph
-        vertexes = list(set([beginWord] + [endWord] + wordList))
+        if endWord not in wordList:
+            return 0
+        vertexes = list(set([beginWord] + wordList))
         # each vertex is mapped to its adj list and color = 0 and distance = None
         adj = {word: [[], 0, None] for word in vertexes}
         # check if each word connects to the other word 
@@ -762,4 +777,4 @@ class Solution:
             adj[u][1] = 2
         if not reached_end_word:
             return 0
-        return adj[endWord][2]
+        return adj[endWord][2] + 1
