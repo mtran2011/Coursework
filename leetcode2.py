@@ -778,3 +778,74 @@ class Solution:
         if not reached_end_word:
             return 0
         return adj[endWord][2] + 1
+# two end bfs
+class Solution:
+    def connected(self, word1, word2):
+        # word2 is 1 letter changed from word1
+        if len(word1) != len(word2):
+            return False
+        diff = 0
+        for i in range(len(word1)):
+            if word1[i] != word2[i]:
+                diff += 1
+                if diff >= 2:
+                    return False
+        return diff == 1
+
+    def ladderLength(self, beginWord, endWord, wordList):
+        vertexes = set([beginWord] + wordList)
+        if endWord not in vertexes:
+            return 0
+        # color = [0,0] in forward and backward q, and distance = [None,None]
+        adj = {word: [[], [0,0], [None,None]] for word in vertexes}
+        vertexes = list(vertexes)
+        for i in range(len(vertexes)-1):
+            for j in range(i+1, len(vertexes)):                
+                if self.connected(vertexes[i], vertexes[j]):
+                    adj[vertexes[i]][0].append(vertexes[j])
+                    adj[vertexes[j]][0].append(vertexes[i])
+        
+        from queue import Queue
+        forward_q, backward_q = Queue(), Queue()
+        forward_q.put(beginWord)
+        backward_q.put(endWord)
+        # source.color = gray, source.distance = 0
+        adj[beginWord][1][0], adj[beginWord][2][0] = 1, 0
+        adj[endWord][1][1], adj[endWord][2][1] = 1, 0
+        reached = False
+        forward_set, backward_set = {beginWord}, {endWord}
+        mid = None
+        while not reached and not forward_q.empty() and not backward_q.empty():
+            # build the level frontier of the forward bfs
+            forward_set = set()
+            for _ in range(forward_q.qsize()):
+                u = forward_q.get()
+                forward_set.add(u)                
+                for v in adj[u][0]:
+                    if adj[v][1][0] == 0:
+                        adj[v][1][0] = 1
+                        adj[v][2][0] = adj[u][2][0] + 1
+                        forward_q.put(v)
+                    if v in backward_set:
+                        reached = True
+                        mid = v
+                adj[u][1][0] = 2
+            if reached:
+                continue
+            # build the level frontier for the backward bfs
+            backward_set = set()
+            for _ in range(backward_q.qsize()):
+                u = backward_q.get()
+                backward_set.add(u)                
+                for v in adj[u][0]:
+                    if adj[v][1][1] == 0:
+                        adj[v][1][1] = 1
+                        adj[v][2][1] = adj[u][2][1] + 1
+                        backward_q.put(v)
+                    if v in forward_set:
+                        reached = True
+                        mid = v
+                adj[u][1][1] = 2
+        if not reached:
+            return 0
+        return 1 + adj[mid][1][0] + adj[mid][1][1]
