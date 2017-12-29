@@ -698,3 +698,38 @@ class Solution:
 # the endword is the node you want to reach from the source
 # bfs gives shortest path from source 
 # the word u connects to v if v has 1 letter changed from u
+class Solution:
+    def word_to_dict(self, word):
+        mydict = {}
+        for s in word:
+            mydict[s] = mydict.get(s,0) + 1
+        return mydict
+
+    def connected(self, word1, word2):        
+        if len(wor1) != len(word2):
+            return False
+        d1 = self.word_to_dict(word1)
+        d2 = self.word_to_dict(word2)
+        diff = 0
+        for s in set(d1.keys() + d2.keys()):
+            diff += abs(d1.get(s,0) - d2.get(s,0))
+        return diff < 2
+
+    def ladderLength(self, beginWord, endWord, wordList):
+        """
+        :type beginWord: str
+        :type endWord: str
+        :type wordList: List[str]
+        :rtype: int
+        """
+        # build the adj list for the graph
+        vertexes = list(set([beginWord] + [endWord] + wordList))
+        adj = {word: [] for word in vertexes}
+        # check if each word connects to the other word 
+        # if i connects to i+k, when you are at i+k, no need to check for (i+k,i) again
+        for i in range(len(vertexes)-1):
+            for j in range(i+1, len(vertexes)):
+                # check if (i,j) connects
+                if self.connected(vertexes[i], vertexes[j]):
+                    adj[vertexes[i]].append(vertexes[j])
+                    adj[vertexes[j]].append(vertexes[i])
