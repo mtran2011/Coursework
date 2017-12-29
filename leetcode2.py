@@ -706,12 +706,12 @@ class Solution:
         return mydict
 
     def connected(self, word1, word2):        
-        if len(wor1) != len(word2):
+        if len(word1) != len(word2):
             return False
         d1 = self.word_to_dict(word1)
         d2 = self.word_to_dict(word2)
         diff = 0
-        for s in set(d1.keys() + d2.keys()):
+        for s in set(list(d1.keys()) + list(d2.keys())):
             diff += abs(d1.get(s,0) - d2.get(s,0))
         return diff < 2
 
@@ -724,12 +724,42 @@ class Solution:
         """
         # build the adj list for the graph
         vertexes = list(set([beginWord] + [endWord] + wordList))
-        adj = {word: [] for word in vertexes}
+        # each vertex is mapped to its adj list and color = 0 and distance = None
+        adj = {word: [[], 0, None] for word in vertexes}
         # check if each word connects to the other word 
         # if i connects to i+k, when you are at i+k, no need to check for (i+k,i) again
         for i in range(len(vertexes)-1):
             for j in range(i+1, len(vertexes)):
                 # check if (i,j) connects
                 if self.connected(vertexes[i], vertexes[j]):
-                    adj[vertexes[i]].append(vertexes[j])
-                    adj[vertexes[j]].append(vertexes[i])
+                    adj[vertexes[i]][0].append(vertexes[j])
+                    adj[vertexes[j]][0].append(vertexes[i])
+        # now that you have the adj list, use bfs where beginWord is the source
+        from queue import Queue 
+        q = Queue()
+        q.put(beginWord)
+        # source.color = gray, source.distance = 0
+        adj[beginWord][1] = 1
+        adj[beginWord][2] = 0
+        reached_end_word = False
+        while not reached_end_word and not q.empty():
+            u = q.get()
+            # for each v that u connects to
+            # for v in adj[u][0]:
+            #     if v.color == white:
+            #         v.color = gray
+            #         v.parent = u
+            #         v.distance = u.distance + 1
+            #         q.enqueue(v)
+            # u.color = black
+            for v in adj[u][0]:
+                if adj[v][1] == 0:
+                    adj[v][1] = 1
+                    adj[v][2] = adj[u][2] + 1
+                    q.put(v)
+                if v == endWord:
+                    reached_end_word = True
+            adj[u][1] = 2
+        if not reached_end_word:
+            return 0
+        return adj[endWord][2]
