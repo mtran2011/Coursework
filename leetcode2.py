@@ -849,3 +849,116 @@ class Solution:
         if not reached:
             return 0
         return 1 + adj[mid][1][0] + adj[mid][1][1]
+
+# 279. Perfect Squares
+class Solution:
+    # using bfs
+    def numSquares(self, n):
+        from queue import Queue
+        from math import floor
+        q = Queue()
+        q.put(n)
+        reached = False
+        level = 0
+        visited = set()
+        while not reached:
+            level += 1
+            # by using for loop you can keep track of the level
+            for _ in range(q.qsize()):
+                n = q.get()
+                for x in range(floor(n**0.5),0,-1):
+                    remain = n - x**2
+                    if remain not in visited:
+                        q.put(remain)
+                        visited.add(remain)
+                    if remain == 0:
+                        reached = True
+                        break
+                if reached:
+                    break
+        return level
+class Solution:
+    # using bottom up DP
+    def numSquares(self, n):
+        from math import floor
+        from sys import maxsize
+        count = [maxsize for _ in range(n+1)]
+        count[0] = 0
+        for num in range(1,n+1):
+            for x in range(floor(num**0.5),0,-1):
+                remain = num - x**2
+                if 1 + count[remain] < count[num]:
+                    count[num] = 1 + count[remain]
+        return count[-1]
+
+# 96. Unique Binary Search Trees
+class Solution:
+    def numTrees(self, n):
+        f = [0 for _ in range(n+1)]
+        f[0], f[1] = 1, 1
+        # f[k] is number of bst using nodes 1,...,k
+        for k in range(2,n+1):
+            # j is the root, you can select either 1,...,k as root
+            for j in range(1,k+1):
+                f[k] += f[j-1] * f[k-j]
+        return f[-1]
+
+# 32. Longest Valid Parentheses
+class Solution:
+    def longestValidParentheses(self, s):
+        n = len(s)
+        if n < 2:
+            return 0
+        f = [[None for _ in range(n)] for _ in range(n)]
+        # the matrix is 0 from the diagonal and below
+        for i in range(n):
+            for j in range(i+1):
+                f[i][j] = 0
+        for length in range(1,n):
+            # start index + length <= n-1
+            for start_index in range(n-length):
+                end_index = start_index + length
+                if s[start_index] == "(" and s[end_index] == ")":
+                    f[start_index][end_index] = 2 + f[start_index+1][end_index-1]
+                elif s[start_index] == ")":
+                    f[start_index][end_index] = f[start_index+1][end_index]
+                else:
+                    f[start_index][end_index] = f[start_index][end_index-1]
+        # this method is wrong, example when s = ()()
+        return f[0][n-1]
+
+class Solution:
+    def longestValidParentheses(self, s):
+        n = len(s)
+        if n < 2:
+            return 0
+        global_max = 0
+        # f[k] = max length for the sequence ending at exactly s[k]
+        f = [None for _ in range(n)]
+        f[0] = 0
+        for k in range(1,n):
+            if s[k] == "(":
+                f[k] = 0
+            else:
+                if s[k-1] == "(":
+                    if k-2 >= 0:
+                        f[k] = 2 + f[k-2]
+                    else:
+                        f[k] = 2
+                else:
+                    # here s[k-1] == ")"
+                    # j is the starting index of the longest seq ending at exactly s[k-1]
+                    # the len of this seq is known, it is f[k-1]
+                    j = (k-1) - f[k-1] + 1
+                    if j-1 >= 0:
+                        if s[j-1] == "(":
+                            f[k] = f[k-1] + 2
+                            if j-2 >= 0:
+                                f[k] += f[j-2]
+                        else:
+                            f[k] = 0
+                    else:
+                        f[k] = 0
+            if f[k] > global_max:
+                global_max = f[k]
+        return global_max
